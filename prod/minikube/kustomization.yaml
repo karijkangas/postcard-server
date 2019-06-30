@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+- ../base
+configMapGenerator:
+- env: ./environment.env
+  name: postcard-environment
+- files:
+  - ./database-schema.sql
+  name: postcard-config
+secretGenerator:
+- env: ./SECRETS.env
+  name: postcard-secret
+  type: Opaque
+images:
+- name: postcard-api
+  newName: localhost:5000/postcard-api-prod
+  newTag: "20"
+- name: postcard-mc
+  newName: minio/mc
+  newTag: RELEASE.2019-05-23T01-33-27Z
+- name: postcard-minio
+  newName: minio/minio
+  newTag: RELEASE.2019-05-23T00-29-34Z
+- name: postcard-postgres
+  newName: postgres
+  newTag: 11-alpine
+- name: postcard-redis
+  newName: redis
+  newTag: 5-alpine
+- name: postcard-wss
+  newName: localhost:5000/postcard-wss-prod
+  newTag: "20"
+resources:
+- ./minio.yaml
+- ./postgres.yaml
+- ./ingress.yaml
+patchesStrategicMerge:
+- ./set-replicas.yaml

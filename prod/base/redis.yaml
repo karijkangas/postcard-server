@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postcard-redis
+spec:
+  selector:
+    app: postcard-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postcard-redis
+  labels:
+    app: postcard-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postcard-redis
+  template:
+    metadata:
+      labels:
+        app: postcard-redis
+    spec:
+      containers:
+        - name: postcard-redis
+          image: postcard-redis
+          ports:
+            - containerPort: 6379

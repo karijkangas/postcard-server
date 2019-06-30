@@ -1,0 +1,111 @@
+- Template:
+    TemplateName: 'postcard-registration-en'
+    SubjectPart: 'POSTCARD: complete your registration'
+    HtmlPart: >
+      <h1>POSTCARD: registration</h1>
+      <p>Hi {{firstName}} {{lastName}}!</p>
+      <p>Welcome to POSTCARD. Complete your registration by clicking the link below.</p>
+      <p><a href='{{url}}'>Register</a></p>
+    TextPart: >
+      POSTCARD: registration\r\n
+      Hi {{firstName}} {{lastName}}\r\n
+      Welcome to POSTCARD. Complete your registration by using the link below.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-registration-fi'
+    SubjectPart: 'POSTCARD: viimeistele rekisteröitymisesi'
+    HtmlPart: >
+      <h1>POSTCARD: rekisteröityminen</h1>
+      <p>Hei {{firstName}} {{lastName}}!</p>
+      <p>Tervetuloa POSTCARD-palveluun. Viimeistele rekisteröitymisesi alla olevasta linkistä.</p>
+      <p><a href='{{url}}'>Rekisteröidy</a></p>
+    TextPart: >
+      POSTCARD: rekisteröityminen\r\n
+      Hei {{firstName}} {{lastName}}!\r\n
+      Tervetuloa POSTCARD-palveluun. Viimeistele rekisteröitymisesi alla olevasta linkistä.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-reset-password-en'
+    SubjectPart: 'POSTCARD: reset your password'
+    HtmlPart: >
+      <h1>POSTCARD: reset password</h1>
+      <p>Hi {{firstName}} {{lastName}}!</p>
+      <p>Reset your password by clicking the link below.</p>
+      <p><a href='{{url}}'>Reset password</a></p>
+    TextPart: >
+      POSTCARD: reset password\r\n
+      Hi {{firstName}} {{lastName}}!\r\n
+      Reset your password by using the link below.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-reset-password-fi'
+    SubjectPart: 'POSTCARD: vaihda salasanasi'
+    HtmlPart: >
+      <h1>POSTCARD: vaihda salasana</h1>
+      <p>Hei {{firstName}} {{lastName}}!</p>
+      <p>Vaihda salasanasi alla olevasta linkistä.</p>
+      <p><a href='{{url}}'>Rekisteröidy</a></p>
+    TextPart: >
+      POSTCARD: vaihda salasana\r\n
+      Hei {{firstName}} {{lastName}}!\r\n
+      Vaihda salasanasi alla olevasta linkistä.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-change-email-en'
+    SubjectPart: 'POSTCARD: change your email'
+    HtmlPart: >
+      <h1>POSTCARD: change email</h1>
+      <p>Hi {{firstName}} {{lastName}}!</p>
+      <p>Complete your email change by clicking the link below.</p>
+      <p><a href='{{url}}'>Change email</a></p>
+    TextPart: >
+      POSTCARD: change email\r\n
+      Hi {{firstName}} {{lastName}}!\r\n
+      Complete your email change by using the link below.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-change-email-fi'
+    SubjectPart: 'POSTCARD: vaihda sähköpostiosoitteesi'
+    HtmlPart: >
+      <h1>POSTCARD: vaihda sähköpostiosoite</h1>
+      <p>Hei {{firstName}} {{lastName}}!</p>
+      <p>Viimeistele sähköpostiosoitteesi vaihto alla olevasta linkistä.</p>
+      <p><a href='{{url}}'>Vaihda sähköpostiosoite</a></p>
+    TextPart: >
+      POSTCARD: vaihda sähköpostiosoite\r\n
+      Hei {{firstName}} {{lastName}}!\r\n
+      Viimeistele sähköpostiosoitteesi vaihto alla olevasta linkistä.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-invitation-en'
+    SubjectPart: '{{firstName}} {{lastName}} has invited you to POSTCARD service'
+    HtmlPart: >
+      <h1>POSTCARD: invitation</h1>
+      <p>Hi, {{firstName}} {{lastName}} has invited you to join the POSTCARD!</p>
+      <p>Accept your invitation by clicking the link below.</p>
+      <p><a href='{{url}}'>Change email</a></p>
+    TextPart: >
+      POSTCARD: invitation\r\n
+      Hi, {{firstName}} {{lastName}} has invited you to join the POSTCARD!\r\n
+      Accept your invitation by using the link below.\r\n
+      {{url}}\r\n
+
+- Template:
+    TemplateName: 'postcard-invitation-fi'
+    SubjectPart: '{{firstName}} {{lastName}} on kutsunut sinut POSTCARD-palveluun'
+    HtmlPart: >
+      <h1>POSTCARD: kutsu</h1>
+      <p>Hei, {{firstName}} {{lastName}} on kutsunut sinut POSTCARD-palveluun!</p>
+      <p>Hyväksy kutsusi alla olevasta linkistä.</p>
+      <p><a href='{{url}}'>Hyväksy kutsu</a></p>
+    TextPart: >
+      POSTCARD: kutsu\r\n
+      Hei, {{firstName}} {{lastName}} on kutsunut sinut POSTCARD-palveluun!\r\n
+      Hyväksy kutsusi alla olevasta linkistä.\r\n
+      {{url}}\r\n

@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+docker
+.dockerignore
+.vscode
+bin
+temp
+__mocks__
+__tests__

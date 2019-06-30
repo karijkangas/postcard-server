@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - ../base
+configMapGenerator:
+  - env: ./environment.env
+    name: postcard-environment
+  - files:
+      - ./database-schema.sql
+    name: postcard-config
+secretGenerator:
+  - env: ./SECRETS.env
+    name: postcard-secret
+    type: Opaque
+images:
+  - name: postcard-api
+    newName: 521453527975.dkr.ecr.eu-west-1.amazonaws.com/postcard-api-prod
+    newTag: '1'
+  - name: postcard-postgres
+    newName: postgres
+    newTag: 11-alpine
+  - name: postcard-redis
+    newName: redis
+    newTag: 5-alpine
+  - name: postcard-wss
+    newName: 521453527975.dkr.ecr.eu-west-1.amazonaws.com/postcard-wss-prod
+    newTag: '1'
+resources:
+  - ./alb-ingress-controller.yaml
+  - ./alb-ingress.yaml
+  - ./external-dns.yaml
+  - ./create-schema.yaml
+patchesStrategicMerge:
+  - ./set-replicas.yaml

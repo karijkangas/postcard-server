@@ -1,0 +1,11 @@
+{
+  "testEnvironment": "node",
+  "testMatch": ["**/__tests__/**/*.test.js"],
+  "moduleNameMapper": {
+    "aws-sdk/clients/ses": "<rootDir>/src/__mocks__/ses.js"
+  },
+  "collectCoverage": true,
+  "collectCoverageFrom": ["src/*.js"],
+  "coveragePathIgnorePatterns": ["__tests__", "__mocks__", "devapi-v1.js"],
+  "coverageDirectory": "./temp/coverage"
+}

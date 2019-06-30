@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postcard-postgres
+spec:
+  selector:
+    app: postcard-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postcard-postgres
+  labels:
+    app: postcard-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postcard-postgres
+  template:
+    metadata:
+      labels:
+        app: postcard-postgres
+    spec:
+      containers:
+        - name: postcard-postgres
+          image: postcard-postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-data
+            - name: postcard-secret
+              mountPath: '/run/secrets/POSTCARD_POSTGRES_PASSWORD'
+              readOnly: true
+              subPath: POSTCARD_POSTGRES_PASSWORD
+          env:
+            - name: POSTGRES_PASSWORD_FILE
+              value: /run/secrets/POSTCARD_POSTGRES_PASSWORD
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+        - name: postcard-secret
+          secret:
+            secretName: postcard-secret
+            items:
+              - key: POSTCARD_POSTGRES_PASSWORD
+                path: POSTCARD_POSTGRES_PASSWORD
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postcard-create-schema
+spec:
+  template:
+    spec:
+      containers:
+        - name: postcard-postgres-create-schema
+          image: postcard-postgres
+          command: ['/bin/sh', '-c']
+          args:
+            [
+              'PGPASSWORD=$$(cat /run/secrets/POSTCARD_POSTGRES_PASSWORD) psql --no-password --host=$$POSTCARD_POSTGRES_HOST --port=$$POSTCARD_POSTGRES_PORT --username=$$POSTCARD_POSTGRES_USER --dbname=$$POSTCARD_POSTGRES_DB -f /database-schema.sql;',
+            ]
+          envFrom:
+            - configMapRef:
+                name: postcard-environment
+          volumeMounts:
+            - name: postcard-config
+              mountPath: '/database-schema.sql'
+              readOnly: true
+              subPath: database-schema.sql
+            - name: postcard-secret
+              mountPath: '/run/secrets/POSTCARD_POSTGRES_PASSWORD'
+              readOnly: true
+              subPath: POSTCARD_POSTGRES_PASSWORD
+      restartPolicy: OnFailure
+      volumes:
+        - name: postcard-config
+          configMap:
+            name: postcard-config
+            items:
+              - key: database-schema.sql
+                path: database-schema.sql
+        - name: postcard-secret
+          secret:
+            secretName: postcard-secret
+            items:
+              - key: POSTCARD_POSTGRES_PASSWORD
+                path: POSTCARD_POSTGRES_PASSWORD

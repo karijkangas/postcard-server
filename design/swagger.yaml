@@ -1,0 +1,2223 @@
+swagger: "2.0"
+
+info:
+  version: 0.0.1
+  title: Postcard API
+  description: Postcard REST API
+  contact:
+    name: Kari Kangas
+    email: karijkangas@gmail.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+host: localhost:4000
+
+basePath: /v1
+
+schemes:
+  - http
+
+tags:
+  - name: service
+  - name: requests
+  - name: me
+  - name: images
+  - name: users
+  - name: postcards
+  - name: endpoints
+  - name: dev
+
+paths:
+
+  /healthz:
+    get:
+      summary: Service health check
+      description: >
+        Service health check. Returns 204 success if the service is ok.
+      responses:
+        204:
+          description: Success
+      tags:
+        - service
+
+  /registrations/available:
+    get:
+      summary: Check registration availability
+      description: >
+        Check registration availability. Currently, only email check is supported.
+      produces:
+        - application/json
+      parameters:
+        - name: email
+          in: query
+          type: string
+          description: Email
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/RegistrationAvailability'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /registrations:
+    post:
+      summary: Submit registration request
+      description: >
+        Submit registration request. Service contacts the user via email with instructions how to complete the registration process. On success, returns request expiration time as numbers of milliseconds elapsed since January 1, 1970 00:00:00 UTC. Returns an error if the input data is invalid or the user (email) already exists.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/RegistrationRequest'
+      responses:
+        202:
+          description: Success
+          schema:
+            $ref: '#/definitions/ExpiringRequestResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User already exists
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /registrations/{id}:
+    post:
+      summary: Complete registration request
+      description: >
+        Completes and removes the registration request. The request is also removed if the request fails with an error 409 User already exists.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Registration request id
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/CompleteRegistrationResponse'
+        404:
+          description: Not found 
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User already exists 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /password_resets:
+    post:
+      summary: Submit password reset request
+      description: >
+        Submit password reset request. Service contacts the user via email with instructions how to complete the reset process. On success, returns request expiration time as numbers of milliseconds elapsed since January 1, 1970 00:00:00 UTC.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/PasswordResetRequest'
+      responses:
+        202:
+          description: Success
+          schema:
+            $ref: '#/definitions/ExpiringRequestResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /password_resets/{id}:
+    post:
+      summary: Complete password reset request
+      description: >
+        Completes and removes the password reset request. The request is also removed if the reset fails with an error other than 400 Invalid data, indicating that the new password is invalid.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Password request id
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/CompletePasswordReset'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CompletePasswordResetResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found 
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /email_changes/{id}:
+    post:
+      summary: Complete user email change
+      description: >
+        Complete user email change.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Email change request id
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CompleteEmailChangeResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found 
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /invites/{id}:
+    post:
+      summary: Complete invite
+      description: >
+        Completes the invite and removes the request. The request is also removed if the invite fails with an error other than 400 Invalid data (invalid user data).
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Invite id
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/CompleteInvite'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CompleteInviteResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found 
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+        
+    delete:
+      summary: Reject invite
+      description: >
+        Reject invite. Removes the request, deletes the temporary user account, and adds the email to Do Not Disturb list so that further invites are refused. Note that email is subsequently removed from the DnD list only if the user later on registers to the service.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Invite id
+      responses:
+        204:
+          description: Success
+        404:
+          description: Not found 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - requests
+
+  /me/login:
+    post:
+      summary: Start a new session
+      description: >
+        Start a new session. On success, returns a session token, and session expiration time as numbers of milliseconds elapsed since January 1, 1970 00:00:00 UTC.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/Credentials'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/Session'
+        400:
+          description: Invalid credentials 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+  
+  /me/renew:
+    post:
+      summary: Renew the current session
+      description: >
+        Renew the current session.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Session'
+        403:
+          description: Invalid session 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+  
+  /me/logout:
+    post:
+      summary: End the current session
+      description: >
+        End the current session.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+      responses:
+        204:
+          description: Success
+        403:
+          description: Invalid session 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+  
+  /me:
+    get:
+      summary: Get current user data
+      description: >
+        Get current user data.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Me'
+        403:
+          description: Invalid session 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+
+    delete:
+      summary: Delete account
+      description: >
+        Ends the current session and deletes the account.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/Password'
+      responses:
+        204:
+          description: Success
+        403:
+          description: Invalid session, Invalid password
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+
+  /me/password:
+    put:
+      summary: Set user password
+      description: >
+        Set user password.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/SetPassword'
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session or password
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+
+  /me/language:
+    put:
+      summary: Set user language
+      description: >
+        Set user language. Currently, only "en" and "fi" are supported.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/SetLanguage'
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+
+  /me/avatar:
+    put:
+      summary: Set user avatar
+      description: >
+        Set user avatar to a given upload image id. The upload image is copied in so it can be removed after the avatar has been set succesfully. To remove current avatar, set image to null or empty string.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/SetAvatar'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/SetAvatarResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+
+  /me/email:
+    put:
+      summary: Request user email change
+      description: >
+        Request user email change. Service contacts the user via given new email address with instructions how to complete the email change process. On success, returns request expiration time as numbers of milliseconds elapsed since January 1, 1970 00:00:00 UTC.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/SetEmailRequest'
+      responses:
+        202:
+          description: Success
+          schema:
+            $ref: '#/definitions/SetEmailRequestResponse'
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session or password
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - me
+
+  /me/endpoint:
+    post:
+      summary: Create websocket endpoint for listening events
+      description: >
+        Create websocket endpoint for listening events. On success, returns an endpoint id, and endpoint expiration time as numbers of milliseconds elapsed since January 1, 1970 00:00:00 UTC. A prior websocket connection, if any, is closed when the new endpoint is connected.
+        
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/Endpoint'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+
+      tags:
+        - me
+
+  /images:
+    post:
+      summary: Create upload image
+      description: >
+        Create upload image. The returned data contains the image id and the URL to upload (PUT) the image data.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/ImageResponse'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - images
+
+  /images/{id}:
+    delete:
+      summary: Delete upload image
+      description: >
+        Delete upload image. Invalid images are ignored.
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Image id
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - images
+
+  /images/url:
+    post:
+      summary: Create GET URLs for images
+      description: >
+        Create GET URLs for actual images; avatar or postcard.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/ImageIDs'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ImageURLs'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - images
+
+  /users:
+    get:
+      summary: Find user(s)
+      description: >
+        Find user(s) matching the input parameters. Returns an error if no input parameters are defined.
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: email
+          in: query
+          type: string
+          description: User email
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Users'
+        400:
+          description: Invalid request 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+
+  /users/batch:
+    post:
+      summary: Get batch user data
+      description: >
+        Get batch user data for users that match the given ids. Duplicate ids are matched only once. Users are returned in unspecified order.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/MatchUsersRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Users'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+
+  /users/friends:
+    get:
+      summary: Get friends
+      description: >
+        Get friends. Indices are 64-bit integers encoded as strings.
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: exclusiveStartIndex
+          in: query
+          type: string
+          description: Exclusive start index, defaults to "0"
+        - name: limit
+          in: query
+          type: integer
+          description: Result limit, defaults to 1000, the max value
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/IndexedUsers'
+        400:
+          description: Invalid request 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+  
+  /users/blocked:
+    get:
+      summary: Get blocked users
+      description: >
+        Get blocked users. Indices are 64-bit integers encoded as strings.
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: exclusiveStartIndex
+          in: query
+          type: string
+          description: Exclusive start index, defaults to "0"
+        - name: limit
+          in: query
+          type: integer
+          description: Result limit, defaults to 1000, the max value
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/IndexedUsers'
+        400:
+          description: Invalid request 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+  
+  /users/{id}/blocked:
+    put:
+      summary: Block or unblock user
+      description: >
+        Block or unblock user.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: User id
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/BlockedRequest'            
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found 
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+
+  /users/{id}/unfriend:
+    put:
+      summary: Unfriend user
+      description: >
+        Unfriend user.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: User id
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+        
+  /users/invite:
+    post:
+      summary: Submit user invite
+      description: >
+        Submit user invite. Service contacts the invited user via email with instructions how to complete the invite process. Returns the user id of the invited user, which can be used immediately to sent postcards. Inviting an already existing user simply returns the user id. Inviting an already invited user or a user that have blocked invites returns an error.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/InviteRequest'
+      responses:
+        202:
+          description: Success
+          schema:
+            $ref: '#/definitions/InviteRequestResponse'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Do not disturb, Already invited
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - users
+
+  /postcards:
+    post:
+      summary: Create a postcard
+      description: >
+        Create a new postcard. On success, returns the postcard id. The upload image is copied in so it can be removed after the postcard has been created succesfully.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/CreatePostcard'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/CreatePostcardResponse'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'            
+        403:
+          description: Invalid session, Blocked
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+  /postcards/batch:
+    post:
+      summary: Get batch postcard data
+      description: >
+        Get batch postcard data for postcards that match the given ids. Matches only postcards for which the current user is either a sender or a receiver. Postcards are returned in unspecified order.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/MatchPostcardsRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MatchPostcardsResponse'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+  /postcards/batch-read:
+    post:
+      summary: Get batch postcard read status
+      description: >
+        Get batch postcard read status for postcards that match the given ids. Matches only postcards for which the current user is either a sender or a receiver. Read statuses are returned in unspecified order.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/MatchPostcardsRequest'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MatchPostcardsReadResponse'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+
+  /postcards/inbox:
+    get:
+      summary: Get received postcards
+      description: >
+        Get received postcards.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: exclusiveStartIndex
+          in: query
+          type: string
+          description: Exclusive start index, defaults to "0"
+        - name: limit
+          in: query
+          type: integer
+          description: Result limit, defaults to 1000, the max value
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/InboxPostcards'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+  /postcards/inbox/{index}:
+    delete:
+      summary: Remove postcard from inbox
+      description: >
+        Remove postcard from inbox.
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: index
+          required: true
+          type: string
+          description: Inbox postcard index
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+  /postcards/{id}/read:
+    put:
+      summary: Set postcard as read
+      description: >
+        Set received postcard as read.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Postcard id
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+        
+  /postcards/{id}/connect:
+    post:
+      summary: Add postcard sender to friends
+      description: >
+        Add postcard sender to friends.
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Postcard id
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data 
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+  /postcards/sent:
+    get:
+      summary: Get sent postcards
+      description: >
+        Get sent postcards.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: Session token as 'POSTCARD-TOKEN token="1111-2222-3333-4444"'
+          required: true
+          type: string
+        - name: exclusiveStartIndex
+          in: query
+          type: string
+          description: Exclusive start index, defaults to "0"
+        - name: limit
+          in: query
+          type: integer
+          description: Result limit, defaults to 1000, the max value
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/SentPostcards'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - postcards
+
+  /postcards/sent/{index}:
+    delete:
+      summary: Remove postcard from the list of sent postcards
+      description: >
+        Remove postcard from the list of sent postcards.
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: index
+          required: true
+          type: string
+          description: Postcard index
+      responses:
+        204:
+          description: Success
+        403:
+          description: Invalid session
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'            
+      tags:
+        - postcards
+
+  /endpoints/{id}:
+    get:
+      summary: Websocket endpoint for listening events
+      description: >
+        Websocket endpoint for listening events. Received client messages are echoed as is for heartbeat-purposes.
+        
+        
+        Postcard received message: {type: 'postcard-received', id: &lt;postcard id&gt;}
+        
+        Postcard delivered message: {type: 'postcard-delivered', id: &lt;postcard id&gt;}
+        
+        Set as friend message: {type: 'set-as-friend', id: &lt;user id&gt;}
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Endpoint id
+
+      responses:
+        200:
+          description: Success
+      tags:
+        - endpoints
+
+  /dev/users:
+    post:
+      summary: Create user (DEVELOPMENT API)
+      description: >
+        Create user.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/DevUserData'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevUserDataResponse'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - dev
+
+    get:
+      summary: Get users (DEVELOPMENT API)
+      description: >
+        Get users.
+      produces:
+        - application/json
+      parameters:
+        - name: email
+          in: query
+          type: string
+          description: User email
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Users'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - dev
+
+  /dev/users/{id}:
+    delete:
+      summary: Delete user (DEVELOPMENT API)
+      description: >
+        Delete user.
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: User id
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/users/clear:
+    post:
+      summary: Remove all users (DEVELOPMENT API)
+      description: >
+        Remove all users.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/users/friends:
+    post:
+      summary: Create friend connection (DEVELOPMENT API)
+      description: >
+        Create friend connection between two users.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/DevFriends'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevConnection'
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - dev
+
+  /dev/users/friends/clear:
+    post:
+      summary: Remove all friend connections (DEVELOPMENT API)
+      description: >
+        Remove all friend connections.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/users/blocked/clear:
+    post:
+      summary: Remove all blocked users (DEVELOPMENT API)
+      description: >
+        Remove all blocked users.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/sessions:
+    get:
+      summary: Get active sessions (DEVELOPMENT API)
+      description: >
+        Get active sessions.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevSessions'
+      tags:
+        - dev
+
+  /dev/sessions/clear:
+    post:
+      summary: Clear active sessions (DEVELOPMENT API)
+      description: >
+        Clear active sessions.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/registrations:
+    get:
+      summary: Get pending registration requests (DEVELOPMENT API)
+      description: >
+        Get pending registration requests.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevPendingRequests'
+      tags:
+        - dev
+
+  /dev/password_resets:
+    get:
+      summary: Get pending password reset requests (DEVELOPMENT API)
+      description: >
+        Get pending password reset requests.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevPendingRequests'
+      tags:
+        - dev
+
+  /dev/email_changes:
+    get:
+      summary: Get pending email change requests (DEVELOPMENT API)
+      description: >
+        Get pending email change requests.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevPendingRequests'
+      tags:
+        - dev
+
+  /dev/endpoints:
+    get:
+      summary: Get pending endpoint requests (DEVELOPMENT API)
+      description: >
+        Get pending endpoint requests.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevPendingRequests'
+      tags:
+        - dev
+
+  /dev/requests/clear:
+    post:
+      summary: Clear all pending requests (DEVELOPMENT API)
+      description: >
+        Clear all pending requests.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/invites:
+    get:
+      summary: Get pending invites (DEVELOPMENT API)
+      description: >
+        Get pending invites.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevPendingRequests'
+      tags:
+        - dev
+
+  /dev/invites/clear:
+    post:
+      summary: Clear all pending invites (DEVELOPMENT API)
+      description: >
+        Clear all pending invites.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/ignored:
+    post:
+      summary: Add email to Do Not Disturb list (DEVELOPMENT API)
+      description: >
+        Add email to Do Not Disturb list.
+      consumes:
+        - application/json      
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          schema:
+            $ref: '#/definitions/DevEmail'
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - dev
+
+    get:
+      summary: Get ignored list (DEVELOPMENT API)
+      description: >
+        Get ignored list.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevIgnored'
+      tags:
+        - dev
+
+  /dev/ignored/clear:
+    post:
+      summary: Clear Do Not Disturb list (DEVELOPMENT API)
+      description: >
+        Clear Do Not Disturb list.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/uploads:
+    get:
+      summary: Get uploads (DEVELOPMENT API)
+      description: >
+        Get uploads.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevImages'
+      tags:
+        - dev
+
+  /dev/uploads/clear:
+    post:
+      summary: Remove all uploads (DEVELOPMENT API)
+      description: >
+        Remove all uploads.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/images:
+    get:
+      summary: Get images (DEVELOPMENT API)
+      description: >
+        Get images.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/DevImages'
+      tags:
+        - dev
+
+  /dev/images/clear:
+    post:
+      summary: Remove all images (DEVELOPMENT API)
+      description: >
+        Remove all images.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+  
+  /dev/postcards:
+    get:
+      summary: Get postcards (DEVELOPMENT API)
+      description: >
+        Get postcards.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/GetPostcardsResponse'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - dev
+
+  /dev/postcards/{id}:
+    delete:
+      summary: Delete postcard (DEVELOPMENT API)
+      description: >
+        Delete postcard.
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Postcard id
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+        
+  /dev/postcards/clear:
+    post:
+      summary: Remove all postcards (DEVELOPMENT API)
+      description: >
+        Remove all postcards.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+
+  /dev/RESET:
+    post:
+      summary: Remove all data (DEVELOPMENT API)
+      description: >
+        Remove all data.
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success
+      tags:
+        - dev
+        
+definitions:
+  
+  RegistrationAvailability:
+    type: object
+    properties:
+      email:
+        type: boolean
+  
+  RegistrationRequest:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+        format: password
+      language:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - email
+      - password
+      - language
+  
+  ExpiringRequestResponse:
+    type: object
+    properties:
+      expires:
+        type: integer
+        format: int64
+        example: 1553028728606
+  
+  CompleteRegistrationResponse:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - email
+  
+  PasswordResetRequest:
+    type: object
+    properties:
+      email:
+        type: string
+    required:
+      - email
+
+  CompletePasswordReset:
+    type: object
+    properties:
+      password:
+        type: string
+        format: password
+    required:
+      - email
+  
+  CompletePasswordResetResponse:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - email
+  
+  InviteRequest:
+    type: object
+    properties:
+      email:
+        type: string
+    required:
+      - email
+  
+  InviteRequestResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+    required:
+      - id
+
+  BlockedRequest:
+    type: object
+    properties:
+      blocked:
+        type: boolean
+    required:
+      - block
+  
+  CompleteInvite:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+        format: password
+      language:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - passwordName
+      - language
+
+  CompleteInviteResponse:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - email
+
+  CompleteEmailChangeResponse:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - email
+
+  Me:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      language:
+        type: string
+      avatar:
+        type: string        
+
+  Credentials:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+        format: password
+    required:
+      - email
+      - password
+  
+  Password:
+    type: object
+    properties:
+      password:
+        type: string
+        format: password
+    required:
+      - password
+  
+  Session:
+    type: object
+    properties:
+      token:
+        type: string
+      expires:
+        type: integer
+        format: int64
+        example: 1553028728606
+
+  SetEmailRequest:
+    type: object
+    properties:
+      password:
+        type: string
+        format: password
+      newEmail:
+        type: string
+    required:
+      - password
+      - email
+  
+  SetEmailRequestResponse:
+    type: object
+    properties:
+      expires:
+        type: integer
+        format: int64
+        example: 1553028728606
+    required:
+      - expires
+  
+  SetPassword:
+    type: object
+    properties:
+      password:
+        type: string
+        format: password
+      newPassword:
+        type: string
+        format: password
+    required:
+      - firstName
+      - lastName
+      - email
+      - password
+      - language
+  
+  SetLanguage:
+    type: object
+    properties:
+      language:
+        type: string
+    required:
+      - language
+
+  SetAvatar:
+    type: object
+    properties:
+      image:
+        type: string
+    required:
+      - id
+  
+  SetAvatarResponse:
+    type: object
+    properties:
+      avatar:
+        type: string
+    required:
+      - avatar
+
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      avatar:
+        type: string
+
+  Users:
+    type: array
+    items:
+      $ref: '#/definitions/User'
+
+  IndexedUser:
+    type: object
+    properties:
+      index:
+        type: string
+      id:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      avatar:
+        type: string
+
+  IndexedUsers:
+    type: array
+    items:
+      $ref: '#/definitions/IndexedUser'
+
+  MatchUsersRequest:
+    type: array
+    items:
+      type: string
+
+  CreatePostcard:
+    type: object
+    properties:
+      receiver:
+        type: string
+      image:
+        type: string
+      message:
+        type: string
+      location:
+        type: string
+    required:
+      - receiver
+      - image
+      - location
+  
+  CreatePostcardResponse:
+    type: object
+    properties:
+      id:
+        type: string
+
+  MatchPostcardsRequest:
+    type: array
+    items:
+      type: string
+
+  MatchPostcardsResponse:
+    type: array
+    items:
+      $ref: '#/definitions/Postcard'
+
+  ReadPostcard:
+    type: object
+    properties:
+      id:
+        type: string
+      read:
+        type: string
+        format: date-time
+
+  MatchPostcardsReadResponse:
+    type: array
+    items:
+      $ref: '#/definitions/ReadPostcard'
+
+  InboxPostcard:
+    type: object
+    properties:
+      index:
+        type: string
+      postcard:
+        type: string
+
+  InboxPostcards:
+    type: array
+    items:
+      $ref: '#/definitions/InboxPostcard'
+
+  SentPostcard:
+    type: object
+    properties:
+      index:
+        type: string
+      postcard:
+        type: string
+
+  SentPostcards:
+    type: array
+    items:
+      $ref: '#/definitions/SentPostcard'
+
+  Postcard:
+    type: object
+    properties:
+      id:
+        type: string
+      sender:
+        type: string
+      receiver:
+        type: string
+      image:
+        type: string
+      message:
+        type: string
+      location:
+        type: string
+      created:
+        type: string
+        format: date-time
+      read:
+        type: string
+        format: date-time
+
+  GetPostcardsResponse:
+    type: array
+    items:
+      $ref: '#/definitions/Postcard'
+
+  ImageIDs:
+    type: array
+    items:
+      type: string
+
+  ImageURLs:
+    type: array
+    items:
+      type: string
+
+  ImageResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      url:
+        type: string
+    required:
+      - id
+      - url
+  
+  Error:
+    type: object
+    properties:
+      error:
+        type: string
+  
+  Endpoint:
+    type: object
+    properties:
+      id:
+        type: string
+      expires:
+        type: integer
+        format: int64
+        example: 1553028728606
+  
+  DevUserData:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      language:
+        type: string
+
+  DevFriends:
+    type: object
+    properties:
+      user:
+        type: string
+      friend:
+        type: string
+
+  DevConnection:
+    type: object
+    properties:
+      index:
+        type: integer
+        format: int64
+      user:
+        type: string
+      friend:
+        type: string
+
+  DevUserDataResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      passhash:
+        type: string
+      language:
+        type: string
+      avatar:
+        type: string
+  
+  DevSessions:
+    type: array
+    items:
+      type: string
+          
+  DevPendingRequests:
+    type: array
+    items:
+      type: string
+
+  DevImages:
+    type: object
+    properties:
+      images:
+        type: array
+        items:
+          type: string
+
+  DevEmail:
+    type: object
+    properties:
+      email:
+        type: string
+
+  DevIgnored:
+    type: object
+    properties:
+      hashes:
+        type: array
+        items:
+          type: string
+

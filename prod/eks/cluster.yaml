@@ -1,0 +1,41 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: postcard-staging
+  region: eu-west-1
+
+# vpc:
+#   id: 'vpc-083e26a7be78246c2'
+#   cidr: '172.16.0.0/16'
+#   securityGroup: 'sg-0530e2355a4ae4646'
+#   subnets:
+#     # must provide 'private' and/or 'public' subnets by availibility zone as shown
+#     public:
+#       eu-west-1a:
+#         id: 'subnet-0b10e928a09f37846'
+#         cidr: '172.16.1.0/24'
+
+#       eu-west-1b:
+#         id: 'subnet-0106c6b2eb5c0c40a'
+#         cidr: '172.16.2.0/24'
+
+#       eu-west-1c:
+#         id: 'subnet-0eeb0d0b88837985c'
+#         cidr: '172.16.3.0/24'
+
+nodeGroups:
+  - name: ng-1
+    instanceType: m5.large
+    desiredCapacity: 2
+    #    availabilityZones: ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+    iam:
+      withAddonPolicies:
+        #        imageBuilder: true
+        #        autoScaler: true
+        externalDNS: true
+        albIngress: true
+    # privateNetworking: true # if only 'Private' subnets are given, this must be enabled
+    ssh:
+      allow: true # will use ~/.ssh/id_rsa.pub as the default ssh key
+

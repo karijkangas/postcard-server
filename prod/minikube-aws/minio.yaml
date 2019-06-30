@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postcard-minio
+spec:
+  selector:
+    app: postcard-minio
+  ports:
+    - protocol: TCP
+      port: 9000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postcard-minio
+  labels:
+    app: postcard-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postcard-minio
+  template:
+    metadata:
+      labels:
+        app: postcard-minio
+    spec:
+      containers:
+        - name: postcard-minio
+          image: postcard-minio
+          command: ['/usr/bin/docker-entrypoint.sh']
+          args: ['minio', 'server', '/data']
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /data
+              name: minio-data
+            - name: postcard-secret
+              mountPath: '/run/secrets/POSTCARD_S3_ACCESS_KEY'
+              readOnly: true
+              subPath: POSTCARD_S3_ACCESS_KEY
+            - name: postcard-secret
+              mountPath: '/run/secrets/POSTCARD_S3_SECRET_ACCESS_KEY'
+              readOnly: true
+              subPath: POSTCARD_S3_SECRET_ACCESS_KEY
+          env:
+            - name: MINIO_ACCESS_KEY_FILE
+              value: POSTCARD_S3_ACCESS_KEY
+            - name: MINIO_SECRET_KEY_FILE
+              value: POSTCARD_S3_SECRET_ACCESS_KEY
+            - name: MINIO_HTTP_TRACE
+              value: /dev/stdout
+      volumes:
+        - name: minio-data
+          emptyDir: {}
+        - name: postcard-secret
+          secret:
+            secretName: postcard-secret
+            items:
+              - key: POSTCARD_S3_ACCESS_KEY
+                path: POSTCARD_S3_ACCESS_KEY
+              - key: POSTCARD_S3_SECRET_ACCESS_KEY
+                path: POSTCARD_S3_SECRET_ACCESS_KEY
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postcard-create-buckets
+spec:
+  template:
+    spec:
+      containers:
+        - name: postcard-minio-create-buckets
+          image: postcard-mc
+          command: ['/bin/sh', '-c']
+          args:
+            [
+              '/usr/bin/mc config host add minio http://postcard-minio:9000 $$(cat /run/secrets/POSTCARD_S3_ACCESS_KEY) $$(cat /run/secrets/POSTCARD_S3_SECRET_ACCESS_KEY) || exit 1; /usr/bin/mc mb -p minio/uploads minio/images; exit 0;',
+            ]
+          volumeMounts:
+            - name: postcard-secret
+              mountPath: '/run/secrets/POSTCARD_S3_ACCESS_KEY'
+              readOnly: true
+              subPath: POSTCARD_S3_ACCESS_KEY
+            - name: postcard-secret
+              mountPath: '/run/secrets/POSTCARD_S3_SECRET_ACCESS_KEY'
+              readOnly: true
+              subPath: POSTCARD_S3_SECRET_ACCESS_KEY
+      restartPolicy: OnFailure
+      volumes:
+        - name: postcard-secret
+          secret:
+            secretName: postcard-secret
+            items:
+              - key: POSTCARD_S3_ACCESS_KEY
+                path: POSTCARD_S3_ACCESS_KEY
+              - key: POSTCARD_S3_SECRET_ACCESS_KEY
+                path: POSTCARD_S3_SECRET_ACCESS_KEY

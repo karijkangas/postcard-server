@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: postcard-alb
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    #    alb.ingress.kubernetes.io/security-groups: sg-0530e2355a4ae4646
+    # alb.ingress.kubernetes.io/security-groups: sg-0f53dc215a9f8fa46
+    # alb.ingress.kubernetes.io/subnets: subnet-0b10e928a09f37846,subnet-0106c6b2eb5c0c40a,subnet-0eeb0d0b88837985c
+    alb.ingress.kubernetes.io/certificate-arn: 'arn:aws:acm:eu-west-1:521453527975:certificate/d29015ba-5f9d-4e98-a014-77e6169ae1af'
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+
+    # allow 404s on the health check
+    alb.ingress.kubernetes.io/healthcheck-path: '/v1/healthz'
+    alb.ingress.kubernetes.io/success-codes: '200,204,404'
+    # alb.ingress.kubernetes.io/success-codes: "204"
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
+    # alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60
+spec:
+  rules:
+    - host: postcard-staging.karijkangas.com
+      http:
+        paths:
+          - path: /v1/endpoints/*
+            backend:
+              serviceName: postcard-wss
+              servicePort: 8080
+          - path: /v1/*
+            backend:
+              serviceName: postcard-api
+              servicePort: 8080
