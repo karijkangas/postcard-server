@@ -8,10 +8,9 @@ jest.mock('../config');
 jest.mock('../logger');
 
 let redis;
-// let client;
 
 let config;
-let logger;
+let logger; /* eslint-disable-line no-unused-vars */
 
 let kvstore;
 
@@ -22,7 +21,6 @@ describe('kvstore.js', () => {
     jest.useFakeTimers();
 
     redis = require('redis');
-    //    client = redis.createClient();
     redis.createClient.mockClear();
 
     config = require('../config');

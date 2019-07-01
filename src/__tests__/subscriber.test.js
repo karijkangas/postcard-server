@@ -6,7 +6,7 @@
 jest.mock('../queue');
 jest.mock('../logger');
 
-let logger;
+let logger; /* eslint-disable-line no-unused-vars */
 let queue;
 
 let Subscriber;

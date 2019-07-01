@@ -108,14 +108,6 @@ async function addOrModifyUser(user) {
 
     const hash = emailHash(user.email);
 
-    // await pool
-    //   .query(
-    //     `DELETE FROM "invites" WHERE "user" = $1;
-    //      DELETE FROM "ignored" WHERE "hash" = $2;`,
-    //     [u.id, hash]
-    //   )
-    //   .catch(() => {});
-
     await Promise.all([
       pool
         .query(`DELETE FROM "invites" WHERE "user" = $1;`, [u.id])
@@ -127,9 +119,6 @@ async function addOrModifyUser(user) {
 
     return u;
   } catch (e) {
-    // console.log(
-    //   `>>>> database.addOrModifyUser exception: ${JSON.stringify(e, null, 2)}`
-    // );
     switch (e.code) {
       case '23505':
         return undefined;
@@ -137,39 +126,6 @@ async function addOrModifyUser(user) {
         throw e;
     }
   }
-
-  // try {
-  //   // const res = await pool.query(
-  //   //    INSERT INTO "users" (
-  //   //     "email",
-  //   //     "passhash",
-  //   //     "firstName",
-  //   //     "lastName",
-  //   //     "language"
-  //   //     )
-  //   //    VALUES (lower($1), $2, $3, $4, $5)
-  //   //    ON CONFLICT ("email") DO UPDATE SET
-  //   //     "passhash" = $2,
-  //   //     "firstName" = $3,
-  //   //     "lastName" = $4,
-  //   //     "language" = $5
-  //   //    RETURNING *;`,
-  //   //   [user.email, user.passhash, user.firstName, user.lastName, user.language]
-  //   // );
-  //   const u = res.rows[0];
-  //   // await pool.query(`DELETE FROM "invites" WHERE "user" = $1;`, [u.id]);
-  //   return u;
-  // } catch (e) {
-  //   console.log(
-  //     `>>>> database.addOrModifyUser exception: ${JSON.stringify(e, null, 2)}`
-  //   );
-  //   switch (e.code) {
-  //     case '23505':
-  //       return undefined;
-  //     default:
-  //       throw e;
-  //   }
-  // }
 }
 
 async function getUser(id) {
@@ -205,26 +161,6 @@ async function findUser(email) {
   return res.rows[0];
 }
 
-// async function addOrFindUser(email) {
-//   const res = await pool.query(
-//     `WITH "ins" AS (
-//       INSERT INTO "users" ("email")
-//       VALUES (lower($1))
-//       ON CONFLICT ON CONSTRAINT "users_email_key" DO UPDATE
-//       SET "email" = NULL
-//       WHERE FALSE
-//       RETURNING *
-//      )
-//      SELECT * FROM "ins"
-//      UNION ALL
-//      SELECT * FROM "users"
-//      WHERE "email" = lower($1)
-//      LIMIT 1;`,
-//     [email]
-//   );
-//   return res.rows[0];
-// }
-
 function keysAndValues(data, mutableKeys) {
   const keys = Object.keys(data).filter(key => mutableKeys.includes(key));
   if (keys.length === 0) {
@@ -248,27 +184,12 @@ async function modifyUser(id, user) {
     'language',
     'avatar',
   ];
-  // const keys = Object.keys(user).filter(key => mutableKeys.includes(key));
-  // if (keys.length === 0) {
-  //   return getUser(id);
-  // }
-  // const setString = keys
-  //   .map((key, index) => `"${key}" = $${index + 2}`)
-  //   .join(', ');
-  // const setValues = keys.map(key => user[key]);
 
   const { setString, setValues, oldValues } = keysAndValues(user, mutableKeys);
   if (!setString || !setValues) {
     return getUser(id);
   }
 
-  // const res = await pool.query(
-  //   `UPDATE "users"
-  //     SET ${setString}
-  //     WHERE id = $1
-  //     RETURNING *;`,
-  //   [id, ...setValues]
-  // );
   const res = await pool.query(
     `UPDATE "users" new
       SET ${setString} 
@@ -334,13 +255,6 @@ async function addBlocked(userId, blockedId) {
   }
   try {
     const res = await pool.query(
-      // `INSERT INTO "blocked" (
-      //   "user",
-      //   "blocked"
-      //   )
-      // VALUES ($1, $2)
-      // ON CONFLICT DO NOTHING
-      // RETURNING *;`,
       `WITH "ins" AS (
       INSERT INTO "blocked" ("user", "blocked")
       VALUES ($1, $2)
@@ -358,9 +272,6 @@ async function addBlocked(userId, blockedId) {
     );
     return res.rows[0];
   } catch (e) {
-    // console.log(
-    //   `>>>> database.addBlocked exception: ${JSON.stringify(e, null, 2)}`
-    // );
     switch (e.code) {
       case '23503':
       case '23505':
@@ -439,20 +350,6 @@ async function addPostcard(postcard) {
     );
     const p = res1.rows[0];
 
-    // await client.query(
-    //   `INSERT INTO "inbox" (
-    //     "user",
-    //     "postcard"
-    //     )
-    //   VALUES ($2, $1);
-    //   INSERT INTO "sent" (
-    //     "user",
-    //     "postcard"
-    //     )
-    //   VALUES ($3, $1);`,
-    //   [p.id, postcard.receiver, postcard.sender]
-    // );
-
     await Promise.all([
       client.query(
         `INSERT INTO "inbox" (
@@ -478,9 +375,6 @@ async function addPostcard(postcard) {
     if (client) {
       await client.query('ROLLBACK');
     }
-    // console.log(
-    //   `>>>> database.addPostcard exception: ${JSON.stringify(e, null, 2)}`
-    // );
     switch (e.code) {
       case '23505':
         return undefined;
@@ -493,16 +387,6 @@ async function addPostcard(postcard) {
     }
   }
 }
-
-// async function getPostcard(id) {
-//   const res = await pool.query(
-//     `SELECT * FROM "postcards"
-//      WHERE "id" = $1
-//      LIMIT 1;`,
-//     [id]
-//   );
-//   return res.rows[0];
-// }
 
 async function getPostcards(userId, ids) {
   const validIds = ids.filter(isValidPostcardId);
@@ -517,26 +401,10 @@ async function getPostcards(userId, ids) {
     [userId, validIds]
   );
   return res.rows.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
-  // return res.rows;
 }
 
 async function getInbox(userId, excludedStartIndex, limit) {
   const res = await pool.query(
-    // `SELECT
-    //   "inbox"."index",
-    //   "postcards"."sender",
-    //   "postcards"."image",
-    //   "postcards"."message",
-    //   "postcards"."location",
-    //   "postcards"."created",
-    //   "postcards"."read"
-    //  FROM "inbox", "postcards"
-    //  WHERE
-    //   "inbox"."index" > $1 AND
-    //   "inbox"."user" = $2 AND
-    //   "inbox"."postcard" = "postcards"."id"
-    //  ORDER BY "inbox"."index" ASC
-    //  LIMIT $3;`,
     `SELECT *
      FROM "inbox"
       WHERE
@@ -564,32 +432,6 @@ async function removeFromInbox(userId, index) {
   return res.rows[0];
 }
 
-// async function setAsRead(userId, index) {
-//   const res1 = await pool.query(
-//     `SELECT
-//       "postcard"
-//      FROM "inbox"
-//      WHERE
-//       "index" = $1 AND
-//       "user" = $2
-//      LIMIT 1;`,
-//     [index, userId]
-//   );
-//   if (res1.rows.length !== 1) {
-//     return undefined;
-//   }
-//   const { postcard } = res1.rows[0];
-//   const res2 = await pool.query(
-//     `UPDATE "postcards"
-//       SET read = now()
-//       WHERE
-//         "id" = $1 AND
-//         "read" IS NULL
-//       RETURNING *;`,
-//     [postcard]
-//   );
-//   return res2.rows[0] || {};
-// }
 async function setAsRead(userId, postcardId) {
   if (!isValidPostcardId(postcardId)) {
     return undefined;
@@ -615,55 +457,6 @@ async function setAsRead(userId, postcardId) {
   );
   return res.rows[0];
 }
-
-// async function connectWithSender(userId, index) {
-//   try {
-//     const res = await pool.query(
-//       `WITH
-//        "select_postcard" AS (
-//         SELECT
-//           "postcards"."sender" AS "sender_id",
-//           "postcards"."receiver" AS "receiver_id"
-//         FROM "inbox", "postcards"
-//         WHERE
-//           "inbox"."index" = $1 AND
-//           "inbox"."user" = $2 AND
-//           "inbox"."postcard" = "postcards"."id"
-//         LIMIT 1
-//        ),
-//        "insert_connections" AS (
-//         INSERT INTO "connections" ("user", "friend")
-//         (SELECT "sender_id", "receiver_id" FROM "select_postcard"
-//         UNION
-//         SELECT "receiver_id", "sender_id" FROM "select_postcard")
-//         ON CONFLICT ("user", "friend") DO UPDATE
-//         SET "user" = NULL, "friend" = NULL
-//         WHERE FALSE
-//         RETURNING *
-//        )
-//        SELECT * FROM "insert_connections"
-//        UNION ALL
-//        SELECT * FROM "connections"
-//        WHERE
-//          ("user" = $2 AND "friend" = (SELECT "sender_id" FROM "select_postcard")) OR
-//          ("user" = (SELECT "receiver_id" FROM "select_postcard") AND "friend" = $2)
-//        LIMIT 2;`,
-//       [index, userId]
-//     );
-//     return res.rows;
-//   } catch (e) {
-//     console.log(
-//       `>>>> database.connectWithSender exception: ${JSON.stringify(e, null, 2)}`
-//     );
-//     switch (e.code) {
-//       case '23502':
-//       case '23505':
-//         return undefined;
-//       default:
-//         throw e;
-//     }
-//   }
-// }
 
 async function connectWithSender(userId, postcardId) {
   if (!isValidPostcardId(postcardId)) {
@@ -708,9 +501,6 @@ async function connectWithSender(userId, postcardId) {
         }
       : undefined;
   } catch (e) {
-    // console.log(
-    //   `>>>> database.connectWithSender exception: ${JSON.stringify(e, null, 2)}`
-    // );
     switch (e.code) {
       case '23502':
       case '23505':
@@ -721,27 +511,6 @@ async function connectWithSender(userId, postcardId) {
   }
 }
 
-// async function getSent(userId, excludedStartIndex, limit) {
-//   const res = await pool.query(
-//     `SELECT
-//       "sent"."index",
-//       "postcards"."receiver",
-//       "postcards"."image",
-//       "postcards"."message",
-//       "postcards"."location",
-//       "postcards"."created",
-//       "postcards"."read"
-//      FROM "sent", "postcards"
-//      WHERE
-//       "sent"."index" > $1 AND
-//       "sent"."user" = $2 AND
-//       "sent"."postcard" = "postcards"."id"
-//      ORDER BY "sent"."index" ASC
-//      LIMIT $3;`,
-//     [excludedStartIndex, userId, limit]
-//   );
-//   return res.rows;
-// }
 async function getSent(userId, excludedStartIndex, limit) {
   const res = await pool.query(
     `SELECT *
@@ -770,29 +539,6 @@ async function removeFromSent(userId, index) {
   );
   return res.rows[0];
 }
-
-// async function modifyPostcard(id, postcard) {
-//   const mutableKeys = ['read'];
-//   // const keys = Object.keys(postcard).filter(key => mutableKeys.includes(key));
-//   // if (keys.length === 0) {
-//   //   return getUser(id);
-//   // }
-//   // const setString = keys
-//   //   .map((key, index) => `"${key}" = $${index + 2}`)
-//   //   .join(', ');
-//   // const setValues = keys.map(key => postcard[key]);
-
-//   const { setString, setValues } = keysAndValues(postcard, mutableKeys);
-
-//   const res = await pool.query(
-//     `UPDATE "postcards"
-//       SET ${setString}
-//       WHERE "id" = $1
-//       RETURNING *;`,
-//     [id, ...setValues]
-//   );
-//   return res.rows[0];
-// }
 
 async function deletePostcard(id) {
   const res = await pool.query(
@@ -839,7 +585,6 @@ async function addInvite(email) {
         [user.id]
       );
       [invite] = res.rows;
-      // console.log('>>>>>>>>>> 2', JSON.stringify(res, null, 2));
     }
     await client.query('COMMIT');
     return { user, invite };
@@ -847,9 +592,6 @@ async function addInvite(email) {
     if (client) {
       await client.query('ROLLBACK');
     }
-    // console.log(
-    //   `>>>> database.addInvite exception: ${JSON.stringify(e, null, 2)}`
-    // );
     switch (e.code) {
       case '23503':
       case '23505':
@@ -863,16 +605,6 @@ async function addInvite(email) {
     }
   }
 }
-
-// async function getInvite(id) {
-//   const res = await pool.query(
-//     `SELECT * FROM "invites"
-//      WHERE "id" = $1
-//      LIMIT 1;`,
-//     [id]
-//   );
-//   return res.rows[0];
-// }
 
 async function deleteInvite(id) {
   if (!isValidInviteId(id)) {
@@ -902,9 +634,6 @@ async function ignore(email) {
     );
     return true;
   } catch (e) {
-    // console.log(
-    //   `>>>> database.ignore exception: ${JSON.stringify(e, null, 2)}`
-    // );
     switch (e.code) {
       case '23505':
         return false;
@@ -925,17 +654,6 @@ async function isIgnored(email) {
   return !!res.rows[0];
 }
 
-// async function clearIgnored(email) {
-//   const hash = emailHash(email);
-//   const res = await pool.query(
-//     `DELETE FROM "ignored"
-//      WHERE "hash" = $1
-//      RETURNING *;`,
-//     [hash]
-//   );
-//   return !!res.rows[0];
-// }
-
 module.exports = {
   isValidUserId,
   isValidPostcardId,
@@ -950,7 +668,6 @@ module.exports = {
   getUser,
   getUsers,
   findUser,
-  // addOrFindUser,
   modifyUser,
   deleteUser,
   connectWithSender,
@@ -961,7 +678,6 @@ module.exports = {
   isBlocked,
   deleteBlocked,
   addPostcard,
-  // getPostcard,
   getPostcards,
   getInbox,
   removeFromInbox,
@@ -973,7 +689,6 @@ module.exports = {
   deleteInvite,
   ignore,
   isIgnored,
-  // clearIgnored,
 };
 
 /* ------------------------------------------------------------------ */

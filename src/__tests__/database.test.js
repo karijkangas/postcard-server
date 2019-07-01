@@ -295,18 +295,6 @@ describe('database.js', () => {
       expect(pool.query).toBeCalledTimes(1 + 1);
     });
 
-    // test('getUser should ignore invalid id', async () => {
-    //   pool.query.mockImplementation((q, cb) => cb());
-    //   await database.initialize();
-
-    //   utils.isValidId.mockReturnValue(false);
-
-    //   const id = 'user-id';
-    //   expect(await database.getUser(id)).not.toBeDefined();
-
-    //   expect(pool.query).toBeCalledTimes(1);
-    // });
-
     test('getUser should throw on database failure', async () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
@@ -432,8 +420,6 @@ describe('database.js', () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
-
       const id = 'user-id';
       const newUser = {
         email: 'test@example.com',
@@ -454,8 +440,6 @@ describe('database.js', () => {
     test('modifyUser should skip immutable keys', async () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
-
-      // utils.isValidId.mockReturnValue(true);
 
       const id = 'id-1';
       const newUser = {
@@ -481,18 +465,6 @@ describe('database.js', () => {
         [id]
       );
     });
-
-    // test('modifyUser should ignore invalid id', async () => {
-    //   pool.query.mockImplementation((q, cb) => cb());
-    //   await database.initialize();
-
-    //   utils.isValidId.mockReturnValue(false);
-
-    //   const id = 'user-id';
-    //   expect(await database.modifyUser(id, {})).not.toBeDefined();
-
-    //   expect(pool.query).toBeCalledTimes(1);
-    // });
 
     test('modifyUser should throw on database failure', async () => {
       pool.query.mockImplementation((q, cb) => cb());
@@ -521,8 +493,6 @@ describe('database.js', () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
-
       const id = 'id-1';
       const user = {
         id,
@@ -540,23 +510,10 @@ describe('database.js', () => {
       expect(pool.query).toBeCalledTimes(1 + 1);
     });
 
-    // test('deleteUser should ignore invalid id', async () => {
-    //   pool.query.mockImplementation((q, cb) => cb());
-    //   await database.initialize();
-
-    //   // utils.isValidId.mockReturnValue(false);
-
-    //   const id = 'id-1';
-    //   expect(await database.deleteUser(id)).not.toBeDefined();
-
-    //   expect(pool.query).toBeCalledTimes(1);
-    // });
-
     test('deleteUser should throw on database failure', async () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
       pool.query.mockRejectedValueOnce(new Error('TEST'));
 
       const id = 'id-1';
@@ -570,8 +527,6 @@ describe('database.js', () => {
     test('getConnections should work', async () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
-
-      // utils.isValidId.mockReturnValue(true);
 
       const userId = 'id-1';
       const connections = [{}, {}];
@@ -593,7 +548,6 @@ describe('database.js', () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
       pool.query.mockRejectedValueOnce(new Error('TEST'));
 
       const userId = 'id-1';
@@ -722,8 +676,6 @@ describe('database.js', () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
-
       const userId = 'id-1';
       const excludedStartIndex = 1;
       const limit = 2;
@@ -740,7 +692,6 @@ describe('database.js', () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
       pool.query.mockRejectedValueOnce(new Error('TEST'));
 
       const userId = 'id-1';
@@ -791,8 +742,6 @@ describe('database.js', () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
-
       const userId = 'id-1';
       const blockedId = 'blocked-1';
       const blocked = {};
@@ -804,24 +753,10 @@ describe('database.js', () => {
       expect(pool.query).toBeCalledTimes(1 + 1);
     });
 
-    // test('deleteBlocked should ignore invalid id', async () => {
-    //   pool.query.mockImplementation((q, cb) => cb());
-    //   await database.initialize();
-
-    //   // utils.isValidId.mockReturnValue(false);
-
-    //   const userId = 'id-1';
-    //   const blockedId = 'blocked-1';
-    //   expect(await database.deleteBlocked(userId, blockedId)).not.toBeDefined();
-
-    //   expect(pool.query).toBeCalledTimes(1);
-    // });
-
     test('deleteBlocked should throw on database failure', async () => {
       pool.query.mockImplementation((q, cb) => cb());
       await database.initialize();
 
-      // utils.isValidId.mockReturnValue(true);
       pool.query.mockRejectedValueOnce(new Error('TEST'));
 
       const userId = 'id-1';
@@ -960,34 +895,6 @@ describe('database.js', () => {
       expect(client.release).toBeCalledTimes(1);
     });
   });
-
-  // describe.skip('getPostcard', () => {
-  //   test('getPostcard should work', async () => {
-  //     pool.query.mockImplementation((q, cb) => cb());
-  //     await database.initialize();
-
-  //     const id = 'id-1';
-  //     const postcard = { id };
-  //     pool.query.mockResolvedValueOnce({ rows: [postcard] });
-
-  //     const r = await database.getPostcard(id);
-  //     expect(r).toEqual(postcard);
-
-  //     expect(pool.query).toBeCalledTimes(1 + 1);
-  //   });
-
-  //   test('getPostcard should throw on database failure', async () => {
-  //     pool.query.mockImplementation((q, cb) => cb());
-  //     await database.initialize();
-
-  //     pool.query.mockRejectedValueOnce(new Error('TEST'));
-
-  //     const id = 'id-1';
-  //     await expect(database.getPostcard(id)).rejects.toThrow('TEST');
-
-  //     expect(pool.query).toBeCalledTimes(1 + 1);
-  //   });
-  // });
 
   describe('getPostcards', () => {
     test('getPostcards should work', async () => {

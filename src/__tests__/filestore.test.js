@@ -12,7 +12,7 @@ let minio;
 let client;
 
 let config;
-let logger;
+let logger; /* eslint-disable-line no-unused-vars */
 let utils;
 
 let filestore;
@@ -138,36 +138,9 @@ describe('filestore.js', () => {
     });
   });
 
-  // describe('hasImage', () => {
-  //   test('hasImage should work', async () => {
-  //     filestore.initialize();
-  //     utils.isValidId.mockReturnValue(true);
-
-  //     const image = 'image';
-  //     client.statObject.mockResolvedValue(true);
-  //     expect(await filestore.hasImage(image)).toBe(true);
-
-  //     client.statObject.mockRejectedValue(new Error('TEST'));
-  //     expect(await filestore.hasImage(image)).toBe(false);
-  //   });
-
-  //   test('hasImage should reject invalid image', async () => {
-  //     filestore.initialize();
-  //     utils.isValidId.mockReturnValue(false);
-
-  //     const image = 'image';
-  //     expect(await filestore.hasImage(image)).toBe(false);
-  //     expect(client.statObject).not.toBeCalled();
-
-  //     expect(await filestore.hasImage(undefined)).toBe(false);
-  //     expect(client.statObject).not.toBeCalled();
-  //   });
-  // });
-
   describe('getImageURLs', () => {
     test('getImageURLs should work', async () => {
       filestore.initialize();
-      // utils.isValidId.mockReturnValue(true);
 
       const url = 'url';
       client.presignedGetObject.mockResolvedValue(url);
@@ -180,7 +153,6 @@ describe('filestore.js', () => {
 
     test('getImageURLs should work with empty image list', async () => {
       filestore.initialize();
-      // utils.isValidId.mockReturnValue(true);
 
       const images = [];
       const [r] = await filestore.getImageURLs(images);
@@ -188,20 +160,8 @@ describe('filestore.js', () => {
       expect(client.presignedGetObject).not.toBeCalled();
     });
 
-    // test('getImageURLs should skip invalid images', async () => {
-    //   filestore.initialize();
-    //   utils.isValidId.mockReturnValue(false);
-
-    //   const images = ['image-1', 'image-2'];
-    //   const [a, b] = await filestore.getImageURLs(images);
-    //   expect(a).not.toBeDefined();
-    //   expect(b).not.toBeDefined();
-    //   expect(client.presignedGetObject).not.toBeCalled();
-    // });
-
     test('getImageURLs should throw on filestore failure', async () => {
       filestore.initialize();
-      // utils.isValidId.mockReturnValue(true);
 
       client.presignedGetObject.mockRejectedValue(new Error('TEST'));
 
@@ -246,7 +206,6 @@ describe('filestore.js', () => {
   describe('deleteImage', () => {
     test('deleteImage should work', async () => {
       filestore.initialize();
-      // utils.isValidId.mockReturnValue(true);
 
       const image = 'image';
       client.removeObject.mockResolvedValue(true);
@@ -254,18 +213,8 @@ describe('filestore.js', () => {
       expect(client.removeObject).toBeCalledTimes(1);
     });
 
-    // test('deleteImage should reject invalid image', async () => {
-    //   filestore.initialize();
-    //   utils.isValidId.mockReturnValue(false);
-
-    //   const image = 'image';
-    //   await filestore.deleteImage(image);
-    //   expect(client.removeObject).not.toBeCalled();
-    // });
-
     test('deleteImage should throw on filestore failure', async () => {
       filestore.initialize();
-      // utils.isValidId.mockReturnValue(true);
       client.removeObject.mockRejectedValue(new Error('TEST'));
 
       const images = ['image'];

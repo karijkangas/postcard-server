@@ -16,7 +16,7 @@ let reqstore;
 let Subscriber;
 
 let config;
-let logger;
+let logger; /* eslint-disable-line no-unused-vars */
 
 const processOn = jest.spyOn(process, 'on').mockImplementation(() => {});
 const processExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
@@ -24,7 +24,6 @@ const processExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 const { resolvePromises } = require('./util');
 
 let WebSocket;
-// const WebSocket = require('ws');
 
 describe('server-wss.js', () => {
   beforeEach(() => {
@@ -116,7 +115,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     const s = await new Promise((resolve, reject) => {
       const ws = new WebSocket(endpoint);
       ws.on('open', () => {
@@ -139,7 +137,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     await expect(
       new Promise((resolve, reject) => {
         const ws = new WebSocket(endpoint);
@@ -163,7 +160,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     await expect(
       new Promise((resolve, reject) => {
         const ws = new WebSocket(endpoint);
@@ -191,7 +187,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     const s = await new Promise((resolve, reject) => {
       const ws = new WebSocket(endpoint);
       ws.on('open', () => {
@@ -215,7 +210,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/invalid`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     await expect(
       new Promise((resolve, reject) => {
         const ws = new WebSocket(endpoint);
@@ -237,7 +231,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/healthz`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     await new Promise((resolve, reject) => {
       const ws = new WebSocket(endpoint);
       ws.on('open', () => {
@@ -260,7 +253,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     const s = await new Promise((resolve, reject) => {
       const ws = new WebSocket(endpoint);
       ws.on('open', () => {
@@ -293,7 +285,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     const s = await new Promise((resolve, reject) => {
       const ws = new WebSocket(endpoint);
       ws.on('open', () => {
@@ -328,7 +319,6 @@ describe('server-wss.js', () => {
     const endpoint = `ws://localhost:${config.wssPort}/v1/endpoints/${id}`;
     const wss = await require('../server-wss');
 
-    // const WebSocket = require('ws');
     const s = await new Promise((resolve, reject) => {
       const ws = new WebSocket(endpoint);
       ws.on('open', () => {

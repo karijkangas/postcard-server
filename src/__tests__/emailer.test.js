@@ -2,13 +2,9 @@
  *
  */
 /* eslint-disable global-require */
+/* eslint-disable no-template-curly-in-string */
 
 jest.setMock('aws-sdk/clients/ses', require('../__mocks__/ses'));
-
-// jest.mock('aws-sdk/clients/ses');
-// "moduleNameMapper": {
-//   "aws-sdk/clients/ses": "<rootDir>/src/__mocks__/ses.js"
-// }
 
 jest.mock('../config');
 jest.mock('../logger');
@@ -16,7 +12,7 @@ jest.mock('../logger');
 let ses;
 
 let config;
-let logger;
+let logger; /* eslint-disable-line */
 
 let emailer;
 

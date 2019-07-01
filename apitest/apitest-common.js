@@ -1096,15 +1096,7 @@ module.exports = {
     expect(Array.isArray(r.body)).toBe(true);
     r.body.forEach(p => {
       expect(parseInt(p.index, 10)).toBeGreaterThan(0);
-      // expect(p.user).toHaveLength(UID_LENGTH);
       expect(p.postcard).toHaveLength(UID_LENGTH);
-      // expect(parseInt(p.index, 10)).toBeGreaterThan(0);
-      // expect(p.sender).toHaveLength(UID_LENGTH);
-      // expect(p.image).toBeDefined();
-      // expect(p.message).toBeDefined();
-      // expect(p.location).toBeDefined();
-      // expect(p.created).toBeDefined();
-      // expect(p.read).toBeDefined();
     });
     return r.body;
   },
@@ -1183,29 +1175,6 @@ module.exports = {
     return r.body;
   },
 
-  // blockSender: async function blockSender(
-  //   session,
-  //   { index },
-  //   status = 204,
-  //   error = undefined
-  // ) {
-  //   const headers = this.sessionHeaders(session);
-  //   const req = this.request();
-  //   const r = await req
-  //     .post(`/postcards/inbox/${index}/block`)
-  //     .set(headers)
-  //     .expect(status);
-
-  //   if (error) {
-  //     expect(r.header['content-type']).toMatch(/json/);
-  //     expect(r.body).toEqual(error);
-  //     return undefined;
-  //   }
-
-  //   expect(r.body).toEqual({});
-  //   return r.body;
-  // },
-
   getSent: async function getSent(
     session,
     params,
@@ -1230,13 +1199,6 @@ module.exports = {
     r.body.forEach(p => {
       expect(parseInt(p.index, 10)).toBeGreaterThan(0);
       expect(p.postcard).toHaveLength(UID_LENGTH);
-      // expect(parseInt(p.index, 10)).toBeGreaterThan(0);
-      // expect(p.receiver).toHaveLength(UID_LENGTH);
-      // expect(p.image).toBeDefined();
-      // expect(p.message).toBeDefined();
-      // expect(p.location).toBeDefined();
-      // expect(p.created).toBeDefined();
-      // expect(p.read).toBeDefined();
     });
     return r.body;
   },
@@ -1329,22 +1291,6 @@ module.exports = {
       });
     });
   },
-
-  // subscribeToEvents: function subscribeToEvents(ws, { token }) {
-  //   return new Promise((resolve, reject) => {
-  //     ws.send(JSON.stringify({ token }));
-  //     function listener(data) {
-  //       const m = JSON.parse(data);
-  //       if (m.type === 'subscribed' && m.token === token) {
-  //         ws.removeEventListener('message', listener);
-  //         resolve(ws);
-  //       } else {
-  //         reject(new Error('Unexpected reply'));
-  //       }
-  //     }
-  //     ws.on('message', listener);
-  //   });
-  // },
 
   bufferMessages: function bufferMessages(wses) {
     return wses.map(ws => {

@@ -17,7 +17,6 @@ const { resolvePromises } = require('./util');
 
 describe('server-api.js', () => {
   beforeEach(() => {
-    // jest.resetModuleRegistry();
     jest.resetAllMocks();
   });
 

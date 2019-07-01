@@ -7,4 +7,4 @@ function resolvePromises() {
   });
 }
 
-module.exports = { resolvePromises};
+module.exports = { resolvePromises };

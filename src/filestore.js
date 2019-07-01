@@ -58,16 +58,6 @@ function removeObject(bucket, object) {
   return client.removeObject(bucket, object);
 }
 
-// async function hasObject(bucket, object) {
-//   try {
-//     await client.statObject(bucket, object);
-//     return true;
-//   } catch (e) {
-//     /* */
-//   }
-//   return false;
-// }
-
 /* ------------------------------------------------------------------ */
 
 async function putUploadURL() {
@@ -90,14 +80,6 @@ async function copyUploadToImages(upload) {
   return undefined;
 }
 
-// function hasImage(image) {
-//   return (isValidFileId(image) && hasObject(imageBucket, image)) || false;
-// }
-
-// function getImageURL(image) {
-//   return (image && getObjectURL(imageBucket, image)) || undefined;
-// }
-
 function getImageURLs(images) {
   return Promise.all(images.map(i => getObjectURL(imageBucket, i)));
 }
@@ -119,8 +101,6 @@ module.exports = {
   shutdown,
   putUploadURL,
   copyUploadToImages,
-  // hasImage,
-  // getImageURL,
   getImageURLs,
   deleteUpload,
   deleteImage,
